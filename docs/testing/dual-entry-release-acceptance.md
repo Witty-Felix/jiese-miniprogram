@@ -196,3 +196,17 @@ Issue #33 的“所有真机异常分支全部验证”目前保持未勾选，�
 - 同一 `submission_id` 重交返回 `already`，并核对没有新增 ima/KV 内容。
 
 上述分支已有自动化测试覆盖，但没有真实设备故障注入证据。它们不能通过普通重复提交安全地产生；需要受控开发/测试注入或可审计的代理故障方案。Issue 条目保持未勾选，不要求用户在正式环境随意断网、重复提交或制造重复内容。
+
+## 2026-10-06 受控异常分支验证（自动化）
+
+本次由维护者完成受控自动化验证，不执行正式手机上的故障注入：
+
+- 小程序 `readFile` 实际字节数与选择器元数据不一致：客户端拒绝，未发起 COS PUT；
+- COS PUT 失败：客户端显示失败，不调用 finalize；
+- finalize 结果未知：客户端保留原 submission_id、媒体回执和感悟，重交不重新 prepare 或 PUT；
+- 同一 submission_id 重交：服务端返回 `already`，不重复调用 ima 或写入新的打卡 KV；
+- H5/小程序超限和错误通道：服务端在读取提交状态、创建媒体或登记副作用前拒绝。
+
+`npm test` 全部 10 个测试文件通过；其中 `tests/miniprogram-checkin.test.cjs`、`tests/miniprogram-upload-policy.test.cjs`、`tests/upload-channel.test.mjs` 和 `tests/submission-contract.test.mjs` 直接覆盖上述故障注入和零副作用断言。
+
+这些结果证明实现的自动化异常契约通过，但不等于手机真机故障注入。Issue #33 的“所有真机异常分支全部验证”因此继续保持未勾选；不在正式环境随意断网、重复提交或制造重复内容。
