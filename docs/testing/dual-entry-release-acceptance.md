@@ -44,8 +44,8 @@ curl.exe -sS --connect-timeout 15 -o NUL -w 'HTTP=%{http_code} TLS=%{ssl_verify_
 |---|---|---|---|
 | 1 | 稳定 API DNS 与实际服务 | 本次公共 DNS 及在线 /api/stats HTTP 200；通过 | 发布前复查 |
 | 2 | API HTTPS、证书与微信路径 | 本次代理 HTTPS 探测通过；历史正式 1.0.1 真机完整提交通过 | 补当前真机关闭调试、不绕过域名校验的确认；不能仅凭 curl 关闭 |
-| 3 | 实际 COS HTTPS 白名单与预签名 PUT | 历史正式版完整提交及 ima 核验支持真实 PUT 成功；本次 COS GET 403 不作为 PUT 证据 | 当前后台白名单与严格真机验证 |
-| 4 | API/COS 白名单、开发/真机/发布一致 | config.js 的 release 使用稳定 API；develop/trial 使用 Pages；配置测试通过；本机 project.private.config.json 的 urlCheck=false | 提供 request 合法域名配置：稳定 API、Pages 开发 API、实际 COS；工具开启域名校验，与真机核对 |
+| 3 | 实际 COS HTTPS 白名单与预签名 PUT | 历史正式版完整提交及 ima 核验支持真实 PUT 成功；本次 COS GET 403 不作为 PUT 证据 | 2026-10-06 后台截图已确认 COS request 白名单；仍待严格真机验证 |
+| 4 | API/COS 白名单、开发/真机/发布一致 | config.js 的 release 使用稳定 API；develop/trial 使用 Pages；配置测试通过；本机 project.private.config.json 的 urlCheck=false | 2026-10-06 用户截图已确认三个 request 合法域名齐全；仍需工具开启域名校验，与真机核对 |
 | 5 | H5 系统选择完整提交、200 MiB 兼容 | H5 DOM 流程及通道端点测试覆盖；未找到本次真实浏览器提交证据 | 真实选择器提交并在 ima 核验；209715200 / 209715201 字节边界验收 |
 | 6 | Chrome 微信电脑版拖拽图片/M4A、降级 | 已有 H5 拖放自动化；#31 评论记录 2026-10-05 桌面微信 JPEG/M4A 实际拖放通过，但 API 为本地模拟，非线上链路 | 提供 Chrome/桌面微信版本；从微信分别拖入图片和 M4A 后完整提交；保存文件再选择的降级也完整提交 |
 | 7 | 真机完整链路 | smoke.md 已记录正式 1.0.1 成功及 ima 内容核验；历史通过 | 补严格域名校验确认和当前设备版本 |
@@ -55,6 +55,19 @@ curl.exe -sS --connect-timeout 15 -o NUL -w 'HTTP=%{http_code} TLS=%{ssl_verify_
 | 11 | 两端独立完整、不共享状态 | 两端代码与测试分别覆盖；没有跨端共享机制 | H5 与小程序分别完成真实提交；确认两端草稿/状态互不影响 |
 | 12 | 规格、ADR/上下文、发布说明、矩阵 | 本矩阵为规格补充；引用 ADR-0010/0014；README、CONTEXT 和发布说明链接本记录 | 后续追加证据与最终审核，不抹去历史限制 |
 | 13 | 环境失败保持未完成 | 当前证据缺口已明确，Issue 保持 OPEN | 全部闸门通过后评论证据并关闭 |
+
+## 2026-10-06 后台白名单截图确认
+
+用户在本聊天提供微信公众平台「开发管理 → 开发设置 → 服务器域名」截图。
+request 合法域名明确列出：
+
+- https://api.324614917.xyz
+- https://ima-share-kb-1258344701.cos.accelerate.myqcloud.com
+- https://jiese-checkin.pages.dev
+
+后台白名单配置子项已确认，无需重复添加域名。证据位置为本聊天 2026-10-06 用户提供的 Chrome 截图；
+不保存含登录会话参数的完整地址或账户信息。截图不证明开发工具已启用 urlCheck，
+也不证明正式真机已关闭调试及完成严格校验下的真实 PUT。本项仍保留这些剩余动作。
 
 ## 人工验收步骤与证据格式
 
