@@ -87,3 +87,9 @@ Cloudflare Pages Functions（持 ima 凭证与 KV）
    ▼
 ima 共享知识库「戒色」/ <用户文件夹> / <YYYY-MM-DD> / 笔记 · 截图 · 录音
 ```
+
+## 双入口验收状态（2026-10-06）
+
+现有 H5 和小程序为独立完整入口；上传协议沿用 ADR-0010/0014。
+正式小程序 1.0.1 已有真机成功记录，但 Issue #33 综合验收仍待 H5/桌面微信与异常分支等真实证据。
+具体发布条件与证据边界以 `docs/testing/dual-entry-release-acceptance.md` 为准，不以已完成决策代替部署验收。
