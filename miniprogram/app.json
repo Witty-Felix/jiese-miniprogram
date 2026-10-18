@@ -1,6 +1,7 @@
 {
   "pages": [
-    "pages/checkin/checkin"
+    "pages/checkin/checkin",
+    "pages/stats/stats"
   ],
   "window": {
     "navigationBarTitleText": "戒色打卡",

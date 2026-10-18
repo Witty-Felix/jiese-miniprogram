@@ -4,7 +4,8 @@ import {
   AUDIO_SIZE_ERROR,
   UPLOAD_CHANNEL,
   assertReadByteLength,
-  chooseAndReadAudio,
+  chooseAudioFile,
+  readFileWithSize,
   validateAudioSelection,
   withUploadChannel,
 } from '../miniprogram/upload-policy.js';
@@ -45,12 +46,14 @@ const wx = {
     } };
   },
 };
-const selectedAudio = await chooseAndReadAudio(wx);
-assert.equal(selectedAudio.data.byteLength, selected.size);
+// chooseAndReadAudio 已从生产导出移除，这里按页面实际路径组合 chooseAudioFile + readFileWithSize。
+const selectedAudio = await chooseAudioFile(wx);
+const data = await readFileWithSize(wx, selectedAudio.path, selectedAudio.size, '录音');
+assert.equal(data.byteLength, selected.size);
 assert.equal(readCalls, 1);
 
 let oversizeReadCalls = 0;
-await assert.rejects(() => chooseAndReadAudio({
+await assert.rejects(() => chooseAudioFile({
   chooseMessageFile(options) {
     options.success({ tempFiles: [{ path: '/tmp/big.wav', size: AUDIO_MAX_BYTES + 1 }] });
   },

@@ -21,3 +21,6 @@ graphify-out/
 # 临时部署副本与微信开发者工具个人配置
 .deploy2/
 miniprogram/project.private.config.json
+
+# WorkBuddy 小程序应用内部标记，不入库
+.wbapp_*

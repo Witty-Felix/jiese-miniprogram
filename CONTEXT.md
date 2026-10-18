@@ -69,8 +69,9 @@ H5 浏览器（纯静态前端 index.html / app.js / styles.css）或微信小�
    │  ③ POST /api/finalize { nickname, invite_code, channel?, submission_id, reflection, image, audio, allow_duplicate_day? }
    │       └─ 幂等闸门 → 日期文件夹 → 入库三样内容 → 写 KV 打卡记录
    │          命中重交 → status=already 且零副作用；本日重复 → 409 待用户显式确认（ADR-0010）
-   │  ④ GET  /api/stats                                —— 全员打卡天数
+   │  ④ GET  /api/stats[?detail=1]                     —— 全员打卡天数
    │       list checkin:* → 逐用户 get deleted:*（ADR-0007，绕开 list 延迟）
+   │       detail=1 额外返回每人 dates 数组（小程序日历页），须带 X-Invite-Code 邀请码
    │  ⑤ POST /api/admin/verify                         —— 解锁管理模式（ADR-0006）
    │  ⑥ DELETE /api/admin/checkin                      —— 管理员删 KV 统计（ADR-0006）
    │       { admin_password, operator, nickname, date | all: true }
@@ -87,6 +88,13 @@ Cloudflare Pages Functions（持 ima 凭证与 KV）
    ▼
 ima 共享知识库「戒色」/ <用户文件夹> / <YYYY-MM-DD> / 笔记 · 截图 · 录音
 ```
+
+## 小程序页面（2026-10-17）
+
+- `pages/checkin`：打卡主流程。运动截图有两条入口——系统相册/相机（`wx.chooseMedia`，小程序里唯一能触达系统的文件来源）与微信聊天选择器（`wx.chooseMessageFile`）；阅读录音仍只能从聊天选择（平台无系统音频选择器）。
+- `pages/stats`：打卡日历 + 全员天数面板。周为列、星期为行，已打卡深绿、未打卡白色、范围外留空；顶部汇总累计/连续/今日已打卡；下方全员列表按累计天数排序，点成员切换日历。本人与全员明细均由 `GET /api/stats?detail=1` 一次取回（邀请码走 `X-Invite-Code` 请求头），切人不再打接口。
+- 日历形态于 2026-10-17 在三个原型变体（贡献图 / 横向时间轴 / 传统月历）中选型，定为**贡献图**；原型保留在 `docs/prototypes/miniprogram-stats-prototype.html`，仅作选型依据，不进主分支。
+- 管理模式：输入管理密码（`/api/admin/verify`）后点绿色格子删单日、列表行整户清空，复用 `/api/admin/checkin`（ADR-0006）；密码只存页面内存，不落 storage。
 
 ## 双入口验收状态（2026-10-06）
 

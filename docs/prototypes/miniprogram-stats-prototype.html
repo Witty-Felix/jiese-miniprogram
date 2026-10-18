@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>打卡日历页 · 三个变体（原型）</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #eef1ef; color: #17211e; min-height: 100vh; padding: 26px 20px 96px;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .head { max-width: 720px; margin: 0 auto 18px; text-align: center; }
+  .head h1 { font-size: 19px; font-weight: 700; }
+  .head p { margin-top: 6px; color: #68746f; font-size: 13px; line-height: 1.6; }
+  .tag {
+    display: inline-block; margin-bottom: 10px; padding: 3px 10px; border-radius: 999px;
+    background: #fcebeb; color: #a32d2d; font-size: 11px; letter-spacing: .08em; font-weight: 600;
+  }
+  .stage { display: flex; justify-content: center; }
+  .phone {
+    width: 375px; height: 700px; background: #f4f7f5; border: 10px solid #1c1c1e; border-radius: 44px;
+    overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 30px 60px rgba(31,52,45,.22);
+  }
+  .navbar {
+    flex: none; height: 44px; background: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 600; border-bottom: .5px solid #ececec;
+  }
+  .screen { flex: 1; overflow-y: auto; }
+  .homebar { flex: none; height: 22px; display: flex; align-items: center; justify-content: center; background: #f4f7f5; }
+  .homebar i { width: 120px; height: 5px; border-radius: 3px; background: #1c1c1e; opacity: .85; }
+
+  /* 通用卡片 */
+  .page { padding: 16px 14px 24px; }
+  .card { margin-bottom: 12px; padding: 15px; background: #fff; border: .5px solid #dce5e1; border-radius: 14px; }
+  .row { display: flex; align-items: center; }
+  .between { justify-content: space-between; }
+  .t-title { font-size: 19px; font-weight: 700; }
+  .t-sub { margin-top: 3px; font-size: 11px; color: #68746f; }
+  .t-section { font-size: 14px; font-weight: 700; }
+  .t-hint { margin-top: 8px; font-size: 11px; color: #68746f; line-height: 1.6; }
+  .link { color: #0f6e56; font-size: 12px; }
+  .badge { padding: 2px 8px; border-radius: 999px; background: #e1f5ee; color: #07513f; font-size: 10px; font-weight: 600; }
+
+  /* A：贡献图 */
+  .a-metrics { display: flex; gap: 8px; margin-top: 12px; }
+  .a-metric { flex: 1; padding: 10px 0; border-radius: 10px; background: #f4fbf8; text-align: center; }
+  .a-metric b { display: block; color: #0f6e56; font-size: 21px; font-weight: 700; line-height: 1.15; }
+  .a-metric span { display: block; margin-top: 3px; color: #68746f; font-size: 10px; }
+  .a-scroll { margin-top: 10px; padding: 8px 0; background: #fbfdfc; border-radius: 10px; overflow-x: auto; }
+  .a-cal { margin: 0 auto; }
+  .a-months { display: flex; height: 16px; align-items: flex-end; }
+  .a-wdc { flex: none; width: 22px; }
+  .a-month { flex: none; font-size: 10px; color: #68746f; white-space: nowrap; }
+  .a-line { display: flex; align-items: center; }
+  .a-wd { flex: none; width: 22px; text-align: center; font-size: 10px; color: #93a09a; }
+  .a-slot { flex: none; display: flex; justify-content: center; align-items: center; padding: 1.5px 0; }
+  .a-cell { border-radius: 3px; }
+  .a-on { background: #0f6e56; }
+  .a-off { background: #fff; border: .5px solid #dce5e1; }
+  .a-out { background: transparent; }
+  .a-legend { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 10px; color: #68746f; }
+  .a-legend i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+  .a-member { display: flex; align-items: center; gap: 8px; padding: 10px 8px; border-radius: 10px; border-bottom: .5px solid #eef2f0; }
+  .a-member.on { background: #f4fbf8; }
+  .a-name { flex: 1; font-size: 13px; font-weight: 600; }
+  .a-meta { margin-top: 2px; font-size: 10px; color: #93a09a; font-weight: 400; }
+  .a-num { width: 42px; text-align: center; }
+  .a-num b { display: block; color: #0f6e56; font-size: 15px; }
+  .a-num span { font-size: 10px; color: #93a09a; }
+
+  /* B：横向时间轴 */
+  .b-page { padding: 0 0 24px; }
+  .b-chips { display: flex; gap: 8px; overflow-x: auto; padding: 14px 14px 10px; }
+  .b-chip { flex: none; display: flex; align-items: center; gap: 6px; padding: 5px 10px 5px 5px; border-radius: 999px; background: #fff; border: .5px solid #dce5e1; font-size: 12px; }
+  .b-chip.on { background: #0f6e56; border-color: #0f6e56; color: #fff; }
+  .b-av { width: 22px; height: 22px; border-radius: 50%; background: #e1f5ee; color: #0f6e56; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+  .b-chip.on .b-av { background: rgba(255,255,255,.22); color: #fff; }
+  .b-hero { background: #fff; padding: 16px 14px 18px; border-top: .5px solid #ececec; border-bottom: .5px solid #ececec; }
+  .b-hero-top { display: flex; align-items: baseline; justify-content: space-between; }
+  .b-hero-name { font-size: 20px; font-weight: 700; }
+  .b-hero-sub { font-size: 11px; color: #68746f; }
+  .b-strip { display: flex; gap: 8px; margin-top: 14px; overflow-x: auto; padding-bottom: 4px; }
+  .b-day { flex: none; width: 54px; padding: 9px 0; border-radius: 12px; background: #f7faf8; text-align: center; border: .5px solid #eef2f0; }
+  .b-day.on { background: #0f6e56; border-color: #0f6e56; color: #fff; }
+  .b-day.today { box-shadow: inset 0 0 0 1.5px #0f6e56; }
+  .b-day.today.on { box-shadow: none; }
+  .b-day small { display: block; font-size: 10px; opacity: .7; }
+  .b-day b { display: block; margin-top: 3px; font-size: 17px; }
+  .b-day em { display: block; margin-top: 4px; font-size: 9px; font-style: normal; opacity: .8; }
+  .b-big { display: flex; gap: 10px; padding: 16px 14px 4px; }
+  .b-big div { flex: 1; }
+  .b-big b { display: block; font-size: 30px; color: #0f6e56; line-height: 1.1; }
+  .b-big span { font-size: 11px; color: #68746f; }
+  .b-log { margin: 16px 14px 0; background: #fff; border-radius: 14px; border: .5px solid #dce5e1; padding: 6px 14px; }
+  .b-log h4 { padding: 12px 0 8px; font-size: 13px; }
+  .b-log li { list-style: none; display: flex; justify-content: space-between; padding: 9px 0; border-top: .5px solid #eef2f0; font-size: 12px; color: #17211e; }
+  .b-log li span { color: #93a09a; font-size: 11px; }
+  .b-fab { position: sticky; bottom: 16px; float: right; margin-right: 14px; width: 46px; height: 46px; border-radius: 50%; background: #0f6e56; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; box-shadow: 0 8px 18px rgba(15,110,86,.3); }
+
+  /* C：传统月历 */
+  .c-seg { display: flex; margin: 14px; padding: 3px; background: #fff; border: .5px solid #dce5e1; border-radius: 10px; }
+  .c-seg button { flex: 1; padding: 7px 0; border: 0; background: transparent; color: #68746f; font-size: 12px; border-radius: 8px; font-family: inherit; cursor: pointer; }
+  .c-seg button.on { background: #0f6e56; color: #fff; font-weight: 600; }
+  .c-line { margin: 0 14px 12px; font-size: 12px; color: #17211e; }
+  .c-line b { color: #0f6e56; }
+  .c-month { margin: 0 14px 12px; background: #fff; border: .5px solid #dce5e1; border-radius: 14px; padding: 14px; }
+  .c-month h3 { font-size: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+  .c-month h3 span { font-size: 11px; color: #93a09a; font-weight: 400; }
+  .c-week { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 4px; }
+  .c-week span { text-align: center; font-size: 10px; color: #93a09a; }
+  .c-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  .c-days i { height: 34px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-style: normal; color: #17211e; border-radius: 9px; }
+  .c-days i.blank { color: transparent; }
+  .c-days i.on { background: #0f6e56; color: #fff; font-weight: 600; }
+  .c-days i.today { box-shadow: inset 0 0 0 1.5px #0f6e56; }
+  .c-days i.on.today { box-shadow: none; }
+  .c-days i.future { color: #c9d2ce; }
+  .c-tip { margin: 2px 14px 0; padding: 10px 12px; border-radius: 10px; background: #fffaf0; border: .5px solid #f0d8ad; color: #8b5e00; font-size: 11px; }
+
+  /* 切换条 */
+  .switcher {
+    position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 999px;
+    background: #1c1c1e; color: #fff; box-shadow: 0 12px 28px rgba(0,0,0,.28); z-index: 20;
+    font-family: inherit;
+  }
+  .switcher button { width: 30px; height: 30px; border: 0; border-radius: 50%; background: rgba(255,255,255,.12); color: #fff; font-size: 15px; cursor: pointer; }
+  .switcher button:hover { background: rgba(255,255,255,.24); }
+  .sw-info { min-width: 186px; text-align: center; }
+  .sw-info b { display: block; font-size: 12px; }
+  .sw-info span { display: block; margin-top: 2px; font-size: 10px; color: #b9c2be; }
+</style>
+</head>
+<body>
+<div class="head">
+  <div class="tag">PROTOTYPE · 一次性原型，看完即弃</div>
+  <h1>打卡日历页 · 三个结构变体</h1>
+  <p>示例数据与线上一致（郭准 3 天 / witty-felix 3 天 / bird 2 天，今天 2026-10-17）。<br>用底部切换条或键盘 ← → 换变体，选中状态会写进网址。</p>
+</div>
+
+<div class="stage">
+  <div class="phone">
+    <div class="navbar">打卡日历</div>
+    <div class="screen" id="screen"></div>
+    <div class="homebar"><i></i></div>
+  </div>
+</div>
+
+<div class="switcher">
+  <button id="prev" title="上一个变体">←</button>
+  <div class="sw-info"><b id="sw-label"></b><span id="sw-state"></span></div>
+  <button id="next" title="下一个变体">→</button>
+</div>
+
+<script>
+const TODAY = '2026-10-17';
+const DAY = 86400000;
+const parse = (d) => Date.parse(d + 'T00:00:00Z');
+const fmt = (ms) => new Date(ms).toISOString().slice(0, 10);
+const add = (d, n) => fmt(parse(d) + n * DAY);
+const wdMon = (d) => (new Date(parse(d)).getUTCDay() + 6) % 7;
+const wdSun = (d) => new Date(parse(d)).getUTCDay();
+
+const MEMBERS = [
+  { nickname: '郭准', dates: ['2026-10-14', '2026-10-15', '2026-10-16'] },
+  { nickname: 'witty-felix', dates: ['2026-10-13', '2026-10-14', '2026-10-15'] },
+  { nickname: 'bird', dates: ['2026-10-14', '2026-10-15'] },
+];
+
+const VARIANTS = [
+  { key: 'A', name: '贡献图长页' },
+  { key: 'B', name: '横向时间轴' },
+  { key: 'C', name: '传统月历' },
+];
+
+const state = { variant: 'A', member: '郭准', admin: false };
+
+function statsOf(m) {
+  const set = new Set(m.dates);
+  const last = m.dates.slice().sort().pop() || '—';
+  let streak = 0;
+  let cur = set.has(TODAY) ? TODAY : add(TODAY, -1);
+  while (set.has(cur)) { streak += 1; cur = add(cur, -1); }
+  return { total: set.size, streak, last, todayChecked: set.has(TODAY) };
+}
+
+const current = () => MEMBERS.find((m) => m.nickname === state.member) || MEMBERS[0];
+const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+
+/* ---------- A：GitHub 贡献图 ---------- */
+function gridA(dates) {
+  const start = '2026-10-01';
+  const checked = new Set(dates);
+  const gridStart = add(start, -wdMon(start));
+  const gridEnd = add(TODAY, 6 - wdMon(TODAY));
+  const weeks = Math.round((parse(gridEnd) - parse(gridStart)) / DAY + 1) / 7;
+  const pitch = Math.max(20, Math.min(56, Math.floor(634 / weeks))); // rpx
+  const cell = pitch - 6;
+  const months = [];
+  const rows = ['一', '', '三', '', '五', '', ''].map(() => []);
+  let lastMonth = '';
+  for (let w = 0; w < weeks; w++) {
+    let firstIn = '';
+    for (let d = 0; d < 7; d++) {
+      const date = add(gridStart, w * 7 + d);
+      const inRange = date >= start && date <= TODAY;
+      if (inRange && !firstIn) firstIn = date;
+      rows[d].push({ date, inRange, checked: inRange && checked.has(date) });
+    }
+    const label = (firstIn || add(gridStart, w * 7)).slice(5, 7).replace(/^0/, '') + '月';
+    months.push(label === lastMonth ? '' : label);
+    lastMonth = label;
+  }
+  return { weeks, pitch: pitch / 2, cell: cell / 2, months, rows };
+}
+
+function variantA() {
+  const m = current();
+  const s = statsOf(m);
+  const g = gridA(m.dates);
+  const calW = 22 + g.weeks * g.pitch;
+  return `<div class="page">
+    <div class="row between" style="padding:0 2px 12px">
+      <div>
+        <div class="t-title">打卡日历</div>
+        <div class="t-sub">统计日期 ${TODAY} · 按累计天数排序</div>
+      </div>
+      <div class="row" style="gap:6px">
+        <span class="link">刷新</span>
+        <span class="link${state.admin ? ' ' : ''}" data-act="admin">${state.admin ? '退出管理' : '管理'}</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="gap:8px">
+        <b style="font-size:17px">${esc(m.nickname)}</b>
+        <span class="badge">${s.todayChecked ? '今日已打卡' : '今日未打卡'}</span>
+      </div>
+      <div class="a-metrics">
+        <div class="a-metric"><b>${s.total}</b><span>累计天数</span></div>
+        <div class="a-metric"><b>${s.streak}</b><span>连续天数</span></div>
+        <div class="a-metric"><b>${s.todayChecked ? '是' : '否'}</b><span>今日打卡</span></div>
+      </div>
+      <div class="t-hint">最近打卡 ${s.last}</div>
+    </div>
+
+    <div class="card">
+      <div class="t-section">打卡记录</div>
+      <div class="a-scroll">
+        <div class="a-cal" style="width:${calW}px">
+          <div class="a-months">
+            <div class="a-wdc"></div>
+            ${g.months.map((x) => `<div class="a-month" style="width:${g.pitch}px">${x}</div>`).join('')}
+          </div>
+          ${g.rows.map((cells, i) => `<div class="a-line">
+            <div class="a-wd">${['一', '', '三', '', '五', '', ''][i]}</div>
+            ${cells.map((c) => `<div class="a-slot" style="width:${g.pitch}px" ${state.admin && c.checked ? 'data-act="del" data-date="' + c.date + '"' : ''}>
+              <div class="a-cell ${c.checked ? 'a-on' : c.inRange ? 'a-off' : 'a-out'}" style="width:${g.cell}px;height:${g.cell}px"></div>
+            </div>`).join('')}
+          </div>`).join('')}
+        </div>
+      </div>
+      <div class="a-legend">
+        <i class="a-off" style="background:#fff;border:.5px solid #dce5e1"></i><span>未打卡</span>
+        <i class="a-on" style="background:#0f6e56"></i><span>已打卡</span>
+        ${state.admin ? '<span style="margin-left:auto;color:#0f6e56">点绿格可删</span>' : ''}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="t-section" style="margin-bottom:6px">全员天数</div>
+      ${MEMBERS.map((x) => {
+        const sx = statsOf(x);
+        return `<div class="a-member ${x.nickname === state.member ? 'on' : ''}" data-act="pick" data-name="${esc(x.nickname)}">
+          <div class="a-name">${esc(x.nickname)}<div class="a-meta">最近 ${sx.last}</div></div>
+          <div class="a-num"><b>${sx.total}</b><span>累计</span></div>
+          <div class="a-num"><b>${sx.streak}</b><span>连续</span></div>
+          ${state.admin ? '<span class="link" style="color:#a32d2d" data-act="clear" data-name="' + esc(x.nickname) + '">清空</span>' : ''}
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+/* ---------- B：横向时间轴 ---------- */
+function variantB() {
+  const m = current();
+  const s = statsOf(m);
+  const set = new Set(m.dates);
+  const days = [];
+  for (let i = 20; i >= 0; i--) {
+    const d = add(TODAY, -i);
+    days.push({ d, on: set.has(d), today: d === TODAY });
+  }
+  const log = m.dates.slice().sort().reverse().map((d) => ({ d }));
+  const wdName = ['日', '一', '二', '三', '四', '五', '六'];
+  return `<div class="b-page">
+    <div class="b-chips">
+      ${MEMBERS.map((x) => `<div class="b-chip ${x.nickname === state.member ? 'on' : ''}" data-act="pick" data-name="${esc(x.nickname)}">
+        <span class="b-av">${esc(x.nickname.slice(0, 1))}</span>${esc(x.nickname)}
+      </div>`).join('')}
+    </div>
+
+    <div class="b-hero">
+      <div class="b-hero-top">
+        <div class="b-hero-name">${esc(m.nickname)}</div>
+        <div class="b-hero-sub">${s.todayChecked ? '今天已打卡' : '今天还没打卡'}</div>
+      </div>
+      <div class="b-strip">
+        ${days.map((x) => `<div class="b-day ${x.on ? 'on' : ''} ${x.today ? 'today' : ''}">
+          <small>周${wdName[wdSun(x.d)]}</small>
+          <b>${Number(x.d.slice(8))}</b>
+          <em>${x.on ? '已打卡' : '—'}</em>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="b-big">
+      <div><b>${s.total}</b><span>累计天数</span></div>
+      <div><b>${s.streak}</b><span>连续天数</span></div>
+      <div><b>${s.todayChecked ? '是' : '否'}</b><span>今日打卡</span></div>
+    </div>
+
+    <div class="b-log">
+      <h4>最近打卡</h4>
+      <ul>${log.length ? log.map((x) => `<li>${x.d}<span>周${wdName[wdSun(x.d)]}</span></li>`).join('') : '<li>还没有记录</li>'}</ul>
+    </div>
+
+    <div class="b-fab" data-act="admin">${state.admin ? '退出' : '管理'}</div>
+  </div>`;
+}
+
+/* ---------- C：传统月历 ---------- */
+function variantC() {
+  const m = current();
+  const s = statsOf(m);
+  const set = new Set(m.dates);
+  const year = 2026;
+  const month = 9; // 0-based，10 月
+  const first = `${year}-10-01`;
+  const daysInMonth = 31;
+  const lead = wdSun(first);
+  const cells = [];
+  for (let i = 0; i < lead; i++) cells.push('<i class="blank"></i>');
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = `${year}-10-${String(d).padStart(2, '0')}`;
+    const on = set.has(date);
+    const future = date > TODAY;
+    const cls = ['', on ? 'on' : '', date === TODAY ? 'today' : '', future ? 'future' : ''].join(' ').trim();
+    cells.push(`<i class="${cls}" ${on && state.admin ? `data-act="del" data-date="${date}"` : ''}>${d}</i>`);
+  }
+  return `<div class="c-page">
+    <div class="c-seg">
+      ${MEMBERS.map((x) => `<button class="${x.nickname === state.member ? 'on' : ''}" data-act="pick" data-name="${esc(x.nickname)}">${esc(x.nickname)}</button>`).join('')}
+    </div>
+    <div class="c-line">累计 <b>${s.total}</b> 天 · 连续 <b>${s.streak}</b> 天 · ${s.todayChecked ? '今日已打卡' : '今日未打卡'}</div>
+    <div class="c-month">
+      <h3>${year} 年 10 月 <span>${s.total} / 17 天</span></h3>
+      <div class="c-week"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+      <div class="c-days">${cells.join('')}</div>
+    </div>
+    <div class="row between" style="margin:0 16px">
+      <span class="link">← 9 月</span>
+      <span class="link" data-act="admin">${state.admin ? '退出管理' : '管理'}</span>
+      <span class="link" style="color:#c9d2ce">11 月 →</span>
+    </div>
+    ${state.admin ? '<div class="c-tip">管理模式：点任意绿色日期即可删除当天打卡记录（原型不连后端）。</div>' : ''}
+  </div>`;
+}
+
+/* ---------- 渲染与切换 ---------- */
+const RENDER = { A: variantA, B: variantB, C: variantC };
+
+function render() {
+  const v = RENDER[state.variant] || variantA;
+  document.getElementById('screen').innerHTML = v();
+  document.getElementById('screen').scrollTop = 0;
+  const strip = document.querySelector('.b-strip');
+  if (strip) strip.scrollLeft = strip.scrollWidth; // 时间轴默认停在「今天」
+  const meta = VARIANTS.find((x) => x.key === state.variant);
+  document.getElementById('sw-label').textContent = `${meta.key} · ${meta.name}`;
+  document.getElementById('sw-state').textContent = `选中：${state.member} · ${state.admin ? '管理模式' : '浏览模式'}`;
+}
+
+function setVariant(key) {
+  if (!RENDER[key]) return;
+  state.variant = key;
+  render();
+  try {
+    const url = new URL(location.href);
+    url.searchParams.set('variant', key);
+    history.replaceState(null, '', url);
+  } catch (e) {
+    location.hash = 'variant=' + key;
+  }
+}
+
+function readVariant() {
+  const q = new URLSearchParams(location.search).get('variant');
+  if (q && RENDER[q]) return q;
+  const h = /variant=([ABC])/.exec(location.hash);
+  return h ? h[1] : 'A';
+}
+
+document.getElementById('prev').addEventListener('click', () => {
+  const i = VARIANTS.findIndex((x) => x.key === state.variant);
+  setVariant(VARIANTS[(i + VARIANTS.length - 1) % VARIANTS.length].key);
+});
+document.getElementById('next').addEventListener('click', () => {
+  const i = VARIANTS.findIndex((x) => x.key === state.variant);
+  setVariant(VARIANTS[(i + 1) % VARIANTS.length].key);
+});
+
+document.addEventListener('keydown', (e) => {
+  const tag = (e.target.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'textarea' || e.target.isContentEditable) return;
+  if (e.key === 'ArrowLeft') document.getElementById('prev').click();
+  if (e.key === 'ArrowRight') document.getElementById('next').click();
+});
+
+document.getElementById('screen').addEventListener('click', (e) => {
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  const act = el.dataset.act;
+  if (act === 'pick') { state.member = el.dataset.name; render(); return; }
+  if (act === 'admin') { state.admin = !state.admin; render(); return; }
+  if (act === 'del') { alert(`原型：会删除「${state.member}」${el.dataset.date} 的打卡（不会真删）`); return; }
+  if (act === 'clear') { alert(`原型：会清空「${el.dataset.name}」的全部统计（不会真删）`); }
+});
+
+state.variant = readVariant();
+render();
+</script>
+</body>
+</html>

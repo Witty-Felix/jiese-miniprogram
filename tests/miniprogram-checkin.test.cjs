@@ -68,7 +68,7 @@ function makeWx({ image, audio, bytes = {}, routes = {}, chooseFail = {} } = {})
       const route = routes[path.replace('/api/', '')];
       try {
         const answer = responseFor(route, options.data, options);
-        options.success?.({ statusCode: answer?.httpStatus || 200, data: answer });
+        options.success?.({ statusCode: answer?.httpStatus || 200, data: answer?.raw !== undefined ? answer.raw : answer });
       } catch (error) { options.fail?.(error); }
     },
     uploadFile() { calls.uploadFile += 1; },
@@ -104,8 +104,9 @@ const basePrepare = () => ({
   assert.equal((await genericAudioClient.chooseAudioFile()).type, 'audio/mp4');
 }
 
-// A complete new submission uses verify -> prepare -> readFile -> two signed
-// PUTs -> finalize, and never falls back to wx.uploadFile.
+// A complete new submission uses prepare -> readFile -> two signed PUTs ->
+// finalize, and never falls back to wx.uploadFile. verify 由页面登录负责，
+// submit/uploadMaterials 不再重复调用。
 {
   const wx = makeWx({
     image,
@@ -123,7 +124,7 @@ const basePrepare = () => ({
   });
   assert.equal(result.status, 'new');
   assert.deepEqual(wx.calls.requests.filter((r) => r.method !== 'PUT').map((r) => new URL(r.url).pathname), [
-    '/api/verify', '/api/prepare', '/api/finalize',
+    '/api/prepare', '/api/finalize',
   ]);
   const prepareBody = wx.calls.requests.find((r) => new URL(r.url).pathname === '/api/prepare').data;
   const finalizeBody = wx.calls.requests.find((r) => new URL(r.url).pathname === '/api/finalize').data;
@@ -274,6 +275,31 @@ const basePrepare = () => ({
   assert.equal(wx.calls.requests.filter((r) => new URL(r.url).pathname === '/api/prepare').length, 1);
   assert.equal(wx.calls.puts.length, 2);
 }
+// A3 回归：prepare 已报 already_today 且用户确认过一次后，若 finalize 仍返回
+// duplicate_day，应直接抛错——不再二次弹窗，也不重发 finalize。
+{
+  let confirmCalls = 0;
+  const wx = makeWx({
+    image,
+    audio,
+    bytes: { [image.path]: new ArrayBuffer(image.size), [audio.path]: new ArrayBuffer(audio.size) },
+    routes: {
+      verify: { ok: true },
+      prepare: { ...basePrepare(), already_today: true },
+      finalize: { ok: false, status: 'duplicate_day', error: '你今天已经打过卡了' },
+    },
+  });
+  const client = createCheckinClient(wx, { apiBaseUrl: 'https://api.test', now: () => NOW, storage: makeStorage() });
+  await assert.rejects(
+    () => client.submit({
+      nickname: 'member01', invite_code: 'test-code', image, audio,
+      confirmDuplicateDay: async () => { confirmCalls += 1; return true; },
+    }),
+    (error) => error.status === 'duplicate_day',
+  );
+  assert.equal(confirmCalls, 1);
+  assert.equal(wx.calls.requests.filter((r) => new URL(r.url).pathname === '/api/finalize').length, 1);
+}
 // Native cancellation has a stable, actionable error and no API call.
 {
   const wx = makeWx({ chooseFail: { image: 'chooseMessageFile:fail cancel' } });
@@ -288,6 +314,25 @@ const basePrepare = () => ({
   const client = createCheckinClient(wx, { apiBaseUrl: 'https://api.test', now: () => NOW, storage: makeStorage() });
   await assert.rejects(() => client.chooseAudioFile(), (error) => error.code === 'unsupported_type');
   assert.equal(wx.calls.requests.length, 0);
+}
+// finalize 收到 4xx 非 JSON（如 404 HTML）时是明确的客户端错误，判定为可抛出的
+// invalid_response，而不是「结果未知」重交引导。
+{
+  const wx = makeWx({
+    image,
+    audio,
+    bytes: { [image.path]: new ArrayBuffer(image.size), [audio.path]: new ArrayBuffer(audio.size) },
+    routes: {
+      verify: { ok: true },
+      prepare: basePrepare(),
+      finalize: { httpStatus: 404, raw: '<html>404 not found</html>' },
+    },
+  });
+  const client = createCheckinClient(wx, { apiBaseUrl: 'https://api.test', now: () => NOW, storage: makeStorage() });
+  await assert.rejects(
+    () => client.submit({ nickname: 'member01', invite_code: 'test-code', image, audio }),
+    (error) => error.code === 'invalid_response' && error.status === 404,
+  );
 }
 // Drive the real page callbacks: completing the second selector starts PUTs,
 // but does not finalize until the member explicitly submits their reflection.

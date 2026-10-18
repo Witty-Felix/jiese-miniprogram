@@ -1,0 +1,59 @@
+.page { min-height: 100vh; padding: 36rpx 28rpx 60rpx; box-sizing: border-box; }
+.card { margin-bottom: 24rpx; padding: 30rpx; background: #fff; border: 1rpx solid #dce5e1; border-radius: 20rpx; box-shadow: 0 12rpx 36rpx rgba(31, 52, 45, .06); }
+.topbar { display: flex; align-items: center; justify-content: space-between; margin: 0 4rpx 28rpx; }
+.title { color: #17211e; font-size: 38rpx; font-weight: 700; }
+.subtitle { margin-top: 8rpx; color: #68746f; font-size: 24rpx; }
+.topbar-actions { display: flex; align-items: center; gap: 6rpx; }
+.link-button { margin: 0; padding: 0 8rpx; color: #0f6e56; background: transparent; font-size: 25rpx; }
+.link-button.danger { color: #a32d2d; }
+
+.who { display: flex; align-items: center; gap: 14rpx; }
+.who-name { color: #17211e; font-size: 34rpx; font-weight: 700; }
+.badge { padding: 4rpx 12rpx; border-radius: 999rpx; color: #07513f; background: #e1f5ee; font-size: 21rpx; font-weight: 600; }
+.badge-off { color: #68746f; background: #f1f5f3; }
+
+.metrics { display: flex; gap: 14rpx; margin-top: 24rpx; }
+.metric { flex: 1; padding: 20rpx 0; border-radius: 14rpx; background: #f4fbf8; text-align: center; }
+.metric-value { display: block; color: #0f6e56; font-size: 42rpx; font-weight: 700; line-height: 1.15; }
+.metric-label { display: block; margin-top: 6rpx; color: #68746f; font-size: 22rpx; }
+
+.section-title { color: #17211e; font-size: 31rpx; font-weight: 700; }
+.hint { margin-top: 14rpx; color: #68746f; font-size: 24rpx; line-height: 1.5; }
+
+/* 日历：周为列、星期为行；周数少时格子放大铺满，周数多时横向滚动 */
+.calendar-card { padding-bottom: 22rpx; }
+.cal-scroll { box-sizing: border-box; width: 100%; margin-top: 18rpx; padding: 14rpx 0; border-radius: 12rpx; background: #fbfdfc; }
+.cal { display: block; margin: 0 auto; }
+.cal-labels { display: flex; align-items: flex-end; height: 34rpx; }
+.cal-spacer { flex: none; width: 44rpx; }
+.cal-month { flex: none; color: #68746f; font-size: 20rpx; white-space: nowrap; }
+.cal-row { display: flex; align-items: center; }
+.cal-weekday { flex: none; width: 44rpx; color: #93a09a; font-size: 20rpx; text-align: center; }
+.cal-slot { box-sizing: border-box; display: flex; flex: none; align-items: center; justify-content: center; padding: 3rpx 0; }
+.cal-cell { box-sizing: border-box; border-radius: 6rpx; }
+.cal-on { background: #0f6e56; }
+.cal-off { background: #ffffff; border: 1rpx solid #dce5e1; }
+.cal-out { background: transparent; }
+
+.legend { display: flex; align-items: center; margin-top: 16rpx; }
+.legend-cell { flex: none; width: 22rpx; height: 22rpx; border-radius: 4rpx; }
+.legend-text { margin: 0 16rpx 0 8rpx; color: #68746f; font-size: 21rpx; }
+.admin-tip { margin: 0; margin-left: auto; color: #0f6e56; }
+
+.member { display: flex; align-items: center; gap: 14rpx; margin: 0 -12rpx; padding: 20rpx 12rpx; border-bottom: 1rpx solid #eef2f0; border-radius: 12rpx; }
+.member:last-of-type { border-bottom: 0; }
+.member-active { background: #f4fbf8; }
+.member-main { flex: 1; min-width: 0; }
+.member-name { display: flex; align-items: center; gap: 10rpx; color: #17211e; font-size: 28rpx; font-weight: 600; }
+.member-meta { margin-top: 4rpx; color: #93a09a; font-size: 22rpx; }
+.member-num { display: flex; flex: none; width: 84rpx; flex-direction: column; text-align: center; }
+.num-value { color: #0f6e56; font-size: 30rpx; font-weight: 700; }
+.num-label { color: #93a09a; font-size: 20rpx; }
+.remove-button { flex: none; margin: 0; padding: 0 12rpx; color: #a32d2d; background: transparent; font-size: 23rpx; }
+
+.notice { margin: 8rpx 0 20rpx; padding: 20rpx; border-radius: 12rpx; font-size: 25rpx; line-height: 1.55; }
+.error-notice { color: #8e2727; background: #fcebeb; }
+.secondary { border: 0; color: #0f6e56; background: #e1f5ee; font-size: 28rpx; }
+.secondary::after { border: 0; }
+.back { margin-top: 12rpx; }
+.footnote { padding: 8rpx 8rpx 0; color: #93a09a; text-align: center; font-size: 21rpx; }

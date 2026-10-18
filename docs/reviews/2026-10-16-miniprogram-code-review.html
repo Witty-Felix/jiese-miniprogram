@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>小程序代码 Code Review — 2026-10-16</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --ink: #1f2328;
+    --muted: #57606a;
+    --line: #e3e6ea;
+    --red: #c93c37;
+    --red-bg: #fdf1f0;
+    --amber: #9a6700;
+    --amber-bg: #fdf6e3;
+    --blue: #0969da;
+    --blue-bg: #eef4fc;
+    --green: #1a7f37;
+    --green-bg: #eef7f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 20px 56px;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.65 -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  header h1 { font-size: 22px; margin: 0 0 6px; }
+  .meta { color: var(--muted); font-size: 13px; margin-bottom: 22px; }
+  .meta code, .path {
+    background: #eceff2;
+    border-radius: 4px;
+    padding: 1px 5px;
+    font: 12.5px/1.5 Consolas, "Courier New", monospace;
+  }
+  section {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px 22px 14px;
+    margin-bottom: 18px;
+  }
+  h2 { font-size: 17px; margin: 0 0 4px; }
+  h2 .axis-note { font-weight: 400; color: var(--muted); font-size: 13px; margin-left: 8px; }
+  h3 { font-size: 14px; margin: 16px 0 8px; color: var(--muted); text-transform: none; }
+  ul { margin: 0; padding-left: 20px; }
+  li { margin-bottom: 9px; }
+  li:last-child { margin-bottom: 4px; }
+  .tag {
+    display: inline-block;
+    font-size: 11.5px;
+    line-height: 1.6;
+    border-radius: 20px;
+    padding: 0 9px;
+    margin-right: 6px;
+    vertical-align: 1px;
+    white-space: nowrap;
+  }
+  .t-hard { color: var(--red); background: var(--red-bg); }
+  .t-maybe { color: var(--amber); background: var(--amber-bg); }
+  .t-judge { color: var(--blue); background: var(--blue-bg); }
+  .t-suppressed { color: var(--muted); background: #eceff2; }
+  .t-ok { color: var(--green); background: var(--green-bg); }
+  .fix { color: var(--muted); font-size: 13.5px; }
+  .summary {
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--blue);
+    background: var(--card);
+    border-radius: 8px;
+    padding: 14px 20px;
+    font-size: 14px;
+  }
+  .summary p { margin: 4px 0; }
+  .summary b { font-weight: 600; }
+  code { background: #eceff2; border-radius: 4px; padding: 1px 5px; font: 12.5px/1.5 Consolas, "Courier New", monospace; }
+  .divider { height: 1px; background: var(--line); margin: 14px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>小程序代码 Code Review</h1>
+    <div class="meta">
+      2026-10-16 · 范围：<span class="path">miniprogram/</span> · 固定点 <code>ff6228b</code> → <code>HEAD</code>（8 提交，13 文件，+934 行）<br>
+      双轴并行审查：Standards（仓库标准 + 坏味道基线） · Spec（<code>docs/specs/issue-2-wechat-chat-media-checkin.md</code>）<br>
+      <b>处置状态（2026-10-16 同日）</b>：全部问题已修复并回归（全量测试 10/10 全绿，改动未提交）。有意保留：预览环境 Pages 域名（必要工程措施）、ADR-0014 常量交叉校验设计、<code>{nickname, invite_code}</code> 传参形态。
+    </div>
+  </header>
+
+  <section>
+    <h2>Standards <span class="axis-note">代码是否遵循仓库文档化标准</span></h2>
+
+    <h3>文档化标准</h3>
+    <ul>
+      <li><span class="tag t-hard">硬性</span><b>术语偏离 CONTEXT.md 词汇表</b>：词汇表定名「重复日确认」，<code>checkin.wxml:65</code> 写「重复日期确认」，<code>checkin.js</code> 的 <code>askDuplicateDay</code>/<code>duplicatePrompt</code> 亦另起名。
+        <div class="fix">→ 统一为词汇表术语「重复日确认」。</div></li>
+      <li><span class="tag t-maybe">可能</span><span class="tag t-suppressed">已抑制</span><b>ADR-0014 常量复制</b>：<code>upload-policy.js:6-7</code> 复制了 <code>functions/api/_upload-contract.js</code> 的 30/100 MiB 常量与错误文案；ADR-0014 要求「同一份常量与文案」，但其验证条款明确由交叉测试覆盖，按「仓库标准优先」抑制，仅记可能级。</li>
+    </ul>
+
+    <h3>坏味道基线（均为 judgement call）</h3>
+    <ul>
+      <li><span class="tag t-judge">Duplicated Code</span><code>checkin-client.js:15</code> 的 <code>DEFAULT_API_BASE_URL</code> 与 <code>config.js:1</code> 的 <code>PRODUCTION_API_BASE_URL</code> 是同一字面量，且 <code>app.js</code> 两者并用 → 真值两处，改生产域名会引发 <b>Shotgun Surgery</b>（已核实均指向 <code>api.324614917.xyz</code>）。</li>
+      <li><span class="tag t-judge">Duplicated Code</span><code>validateImageSelection</code>/<code>validateAudioSelection</code>（<code>upload-policy.js:42-63</code>）逐行同形；<code>validateSelectedFile</code> 在两条路径各跑一次。</li>
+      <li><span class="tag t-judge">Duplicated Code / Middle Man</span><code>putCos</code> 重写了 <code>requestWithWx</code> 的 Promise+try/catch 包装；<code>readSelectedFile</code> 重写了 <code>chooseAndReadAudio</code> 的 readFile 逻辑。</li>
+      <li><span class="tag t-judge">Speculative Generality</span><code>chooseAndReadAudio</code>（<code>upload-policy.js:133</code>）生产代码未调用，仅测试引用 → 可能应内联。</li>
+      <li><span class="tag t-judge">Primitive Obsession / Data Clumps</span>checkpoint 的 <code>{media_id, cos_key, size}</code> 在 <code>uploadMaterials</code> 与 <code>finishSubmission</code> 手工拼装两遍；<code>{nickname, invite_code}</code> 始终结伴传参。</li>
+      <li><span class="tag t-judge">Divergent Change</span>（可能）<code>upload-policy.js</code> 的 <code>uploadError()</code> 与 <code>checkin-client.js</code> 的 <code>CheckinError</code> 两套错误机制并存。</li>
+      <li><span class="tag t-judge">Duplicated Code</span><code>checkin.js</code> 中 <code>if (this.data.busy || this.data.pending) return</code> 同形守卫在 choose/remove 四函数重复（已核实 <code>removeImage</code>/<code>removeAudio</code>）。</li>
+    </ul>
+    <div class="divider"></div>
+    <div><span class="tag t-ok">通过</span>未发现 ADR-0005 / ADR-0010 契约偏离：检查点机制、重交复用 <code>submission_id</code>、重复日确认流程均合规。</div>
+  </section>
+
+  <section>
+    <h2>Spec <span class="axis-note">是否忠实实现发起规格</span></h2>
+
+    <h3>缺失或不完整</h3>
+    <ul>
+      <li><span class="tag t-hard">缺口</span><b>录音扩展名预检未兜底</b>。规格 line 93/102：「录音选择使用聊天普通文件能力，并限制扩展名为 mp3、m4a、wav、aac」。<code>upload-policy.js:34</code> 先按 MIME 白名单短路返回，<code>x.mp4</code>（<code>audio/mp4</code>）等扩展名外文件照样通过；扩展名闸门只剩 <code>chooseMessageFile</code> 的 <code>extension</code> 参数，客户端预检（规格 line 105「三处保持一致」）未兜底。</li>
+    </ul>
+
+    <h3>未被规格要求的行为（scope creep）</h3>
+    <ul>
+      <li><code>config.js:1-12</code> + <code>app.js:8-12</code>（commit <code>7acc31a</code>）：按 <code>envVersion</code> 把开发/体验环境指向 <code>jiese-checkin.pages.dev</code>。规格 line 79/115 只规定 API 稳定主机 <code>api.324614917.xyz</code>，未授权预览走 Pages 域名。（工程妥协：预览环境可用性 + 正式版强制走备案子域。）</li>
+      <li><code>checkin-client.js:296</code>：自动上传前重跑 <code>verify</code>（登录时已验证），规格 line 94 只要求「两份齐备后自动申请凭证」——一次冗余请求。</li>
+    </ul>
+
+    <h3>看似实现、方式可疑（已抽查核对）</h3>
+    <ul>
+      <li><code>checkin-client.js:184-189</code>：finalize 的任何不可解析响应（含网关 4xx HTML 错误页）一律判为「结果未知 → 可重交」，用户被引导点「重交本次登记」。规格 line 87 的「结果未知」仅指网络中断 / 结果丢失。重交本身幂等安全（不会产生第二条登记），但明确拒绝也会被引导重交、文案误导。</li>
+      <li><code>checkin-client.js:135</code>：手动写入 <code>Content-Length</code> 头。<span class="tag t-suppressed">抽查订正</span>原报告判「必然失败」，但真机基线（MAA-AN00，规格 line 188）已证明该 PUT 链路可用 → 降级为「可疑冗余头」：<code>wx.request</code> 自行管理该头，手写与自动头并存，值得随 <code>enableChunked</code> / 高性能模式议题一并 A/B。</li>
+      <li><code>checkin-client.js:255 / 305</code>：重复日确认为两处闸门（prepare 的 <code>already_today</code> 与 finalize 的 <code>duplicate_day</code>）。正常路径只弹一次；若 prepare 时无重复、finalize 时出现重复（另一设备/入口在间隙内打卡的竞态），会二次弹窗确认——与规格 line 123 单次闸门口径略有出入，属边缘路径。</li>
+    </ul>
+  </section>
+
+  <div class="summary">
+    <p><b>Standards</b>：9 项发现——1 项硬性（术语「重复日确认」→「重复日期确认」，轻微）、1 项抑制后可能级（常量复制）、7 项 judgement call 坏味道。该轴最值得修：<b>API 基址双真值</b>（改域名需动两处，Shotgun Surgery 风险）。</p>
+    <p><b>Spec</b>：6 项发现——1 缺口 / 2 scope creep / 3 可疑。该轴最严重：<b>录音扩展名预检缺口</b>（MIME 短路放行扩展名外文件，与「三处保持一致」不符）。</p>
+    <p style="color:var(--muted);font-size:13px;">两轴独立呈现，不做跨轴排名。服务端 / H5 条款超出本次 diff 范围，未评判。</p>
+  </div>
+</div>
+</body>
+</html>

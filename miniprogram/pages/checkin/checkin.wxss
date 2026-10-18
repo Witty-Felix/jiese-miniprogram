@@ -12,9 +12,24 @@
 .primary, .secondary, .select-button { border: 0; font-size: 28rpx; }
 .primary { margin-top: 30rpx; color: #fff; background: #0f6e56; }
 .primary::after, .secondary::after, .select-button::after { border: 0; }
+.auto-login { margin-top: 28rpx; padding: 24rpx; border: 1rpx solid #b6dcc7; border-radius: 16rpx; background: #f4fbf8; }
+.auto-login-button { margin-top: 0; width: 100%; }
+.auto-login-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 14rpx; }
+.auto-login-note { color: #68746f; font-size: 22rpx; }
+.switch-account { margin: 0; padding: 0 6rpx; color: #0f6e56; background: transparent; font-size: 23rpx; }
+.switch-account::after { border: 0; }
+.divider { display: flex; align-items: center; gap: 14rpx; margin: 26rpx 0 2rpx; color: #93a09a; font-size: 22rpx; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1rpx; background: #e2ebe7; }
+.remember-hint { margin-top: 20rpx; padding: 16rpx 18rpx; border-radius: 12rpx; color: #8b5e00; background: #fffaf0; font-size: 24rpx; line-height: 1.5; }
+.remember-row { margin-top: 26rpx; }
+.remember-label { display: flex; align-items: center; gap: 8rpx; color: #68746f; font-size: 24rpx; }
+.remember-label checkbox { transform: scale(.78); }
 .primary.small { margin-top: 0; flex: 1; }
 .secondary { margin-top: 0; color: #0f6e56; background: #e1f5ee; flex: 1; }
 .topbar { display: flex; align-items: center; justify-content: space-between; margin: 0 4rpx 28rpx; }
+.topbar-actions { display: flex; align-items: center; gap: 6rpx; }
+.select-row { display: flex; gap: 16rpx; }
+.select-row .select-button { flex: 1; }
 .topbar .title { font-size: 38rpx; }
 .link-button { margin: 0; padding: 0 8rpx; color: #0f6e56; background: transparent; font-size: 25rpx; }
 .section-title { color: #17211e; font-size: 31rpx; font-weight: 700; }

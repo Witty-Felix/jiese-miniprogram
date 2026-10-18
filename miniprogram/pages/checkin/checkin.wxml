@@ -3,13 +3,26 @@
     <view class="eyebrow">JIESE CHECK-IN</view>
     <view class="title">戒色打卡</view>
     <view class="subtitle">从微信聊天直接选择今天的材料</view>
-    <form bindsubmit="onLogin">
-      <view class="label">昵称</view>
-      <input name="nickname" class="input" maxlength="16" placeholder="2–16 位中文、字母或数字" />
-      <view class="label">邀请码</view>
-      <input name="invite_code" class="input" password placeholder="向管理员获取" />
-      <button class="primary" formType="submit" loading="{{busy}}" disabled="{{busy}}">进入打卡</button>
-    </form>
+    <view wx:if="{{remembered}}" class="auto-login">
+      <button class="primary auto-login-button" bindtap="onAutoLogin" loading="{{busy}}" disabled="{{busy}}">用「{{remembered.nickname}}」进入</button>
+      <view class="auto-login-foot">
+        <text class="auto-login-note">记住的登录 30 天内有效</text>
+        <button class="switch-account" bindtap="onSwitchAccount" disabled="{{busy}}">切换账号</button>
+      </view>
+    </view>
+    <view wx:if="{{remembered}}" class="divider">或手动登录</view>
+    <view wx:if="{{rememberHint}}" class="remember-hint">{{rememberHint}}</view>
+    <view class="label">昵称</view>
+    <input class="input" maxlength="16" placeholder="2–16 位中文、字母或数字" value="{{inputNickname}}" bindinput="onNicknameInput" />
+    <view class="label">邀请码</view>
+    <input class="input" password placeholder="向管理员获取" value="{{inputInviteCode}}" bindinput="onInviteCodeInput" />
+    <checkbox-group class="remember-row" bindchange="onRememberChange">
+      <label class="remember-label">
+        <checkbox value="remember" checked="{{rememberMe}}" color="#0f6e56" />
+        <text>在这台手机记住我</text>
+      </label>
+    </checkbox-group>
+    <button class="primary" bindtap="onLogin" loading="{{busy}}" disabled="{{busy}}">进入打卡</button>
   </view>
 
   <block wx:else>
@@ -18,13 +31,19 @@
         <view class="title">今日打卡</view>
         <view class="subtitle">{{nickname}} · 两项材料都传好才算成功</view>
       </view>
-      <button class="link-button" bindtap="logout" disabled="{{busy}}">退出</button>
+      <view class="topbar-actions">
+        <button class="link-button" bindtap="openStats" disabled="{{busy}}">榜单</button>
+        <button class="link-button" bindtap="logout" disabled="{{busy}}">退出</button>
+      </view>
     </view>
 
     <view class="card">
       <view class="section-title">1. 运动截图</view>
-      <view class="hint">直接打开微信原生聊天选择器，每次只选择一张图片。</view>
-      <button class="select-button" bindtap="chooseImage" disabled="{{busy}}">从聊天选择运动截图</button>
+      <view class="hint">可从系统相册或相机选择，也能直接从微信聊天选，每次只选一张图片。</view>
+      <view class="select-row">
+        <button class="select-button" bindtap="chooseAlbumImage" disabled="{{busy}}">相册 / 相机</button>
+        <button class="select-button" bindtap="chooseImage" disabled="{{busy}}">从聊天选择</button>
+      </view>
       <view wx:if="{{image}}" class="picked">
         <view class="picked-main">
           <view class="picked-name">{{image.name}}</view>
@@ -36,7 +55,7 @@
 
     <view class="card">
       <view class="section-title">2. 阅读录音</view>
-      <view class="hint">从聊天中选择“作为文件发送”的 MP3、M4A、WAV 或 AAC；上限 100 MiB。</view>
+      <view class="hint">录音没有系统选择器，需从聊天里选“作为文件发送”的 MP3、M4A、WAV 或 AAC；上限 100 MiB。</view>
       <button class="select-button" bindtap="chooseAudio" disabled="{{busy}}">从聊天选择阅读录音</button>
       <view wx:if="{{audio}}" class="picked">
         <view class="picked-main">
@@ -62,7 +81,7 @@
     <view wx:if="{{success}}" class="notice success-notice">{{success}}</view>
 
     <view wx:if="{{duplicatePrompt}}" class="confirm card">
-      <view class="confirm-title">重复日期确认</view>
+      <view class="confirm-title">重复日确认</view>
       <view class="hint">{{duplicateMessage}}</view>
       <view class="confirm-actions">
         <button class="secondary" bindtap="resolveDuplicate" data-answer="false">不再登记</button>

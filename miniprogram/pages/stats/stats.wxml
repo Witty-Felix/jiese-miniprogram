@@ -1,0 +1,125 @@
+<view class="page">
+  <view wx:if="{{error}}" class="card">
+    <view class="notice error-notice">{{error}}</view>
+    <button class="secondary back" bindtap="refresh">重试</button>
+  </view>
+
+  <block wx:else>
+    <view class="topbar">
+      <view>
+        <view class="title">打卡日历</view>
+        <view class="subtitle">统计日期 {{today || '…'}} · 按累计天数排序</view>
+      </view>
+      <view class="topbar-actions">
+        <button class="link-button" bindtap="refresh" disabled="{{loading}}">刷新</button>
+        <button class="link-button {{admin ? 'danger' : ''}}" bindtap="toggleAdmin">{{admin ? '退出管理' : '管理'}}</button>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="who">
+        <text class="who-name">{{selectedNickname}}</text>
+        <text class="badge {{summary.checkedToday ? '' : 'badge-off'}}">{{summary.checkedToday ? '今日已打卡' : '今日未打卡'}}</text>
+      </view>
+      <view class="metrics">
+        <view class="metric">
+          <text class="metric-value">{{summary.total}}</text>
+          <text class="metric-label">累计天数</text>
+        </view>
+        <view class="metric">
+          <text class="metric-value">{{summary.streak}}</text>
+          <text class="metric-label">连续天数</text>
+        </view>
+        <view class="metric">
+          <text class="metric-value">{{summary.checkedToday ? '是' : '否'}}</text>
+          <text class="metric-label">今日打卡</text>
+        </view>
+      </view>
+      <view class="hint">最近打卡 {{summary.lastDate}}</view>
+    </view>
+
+    <view class="card calendar-card">
+      <view class="section-title">打卡记录</view>
+      <scroll-view
+        class="cal-scroll"
+        scroll-x
+        enhanced
+        show-scrollbar="{{false}}"
+        scroll-left="{{calendar.scrollLeft}}"
+        scroll-with-animation="{{false}}"
+      >
+        <view class="cal" style="width:{{calendar.contentWidth}}rpx">
+          <view class="cal-labels">
+            <view class="cal-spacer"></view>
+            <view
+              wx:for="{{calendar.months}}"
+              wx:key="key"
+              class="cal-month"
+              style="width:{{calendar.pitch}}rpx"
+            >{{item.label}}</view>
+          </view>
+          <view wx:for="{{calendar.rows}}" wx:key="key" wx:for-item="line" class="cal-row">
+            <view class="cal-weekday">{{line.label}}</view>
+            <view
+              wx:for="{{line.cells}}"
+              wx:key="date"
+              wx:for-item="cell"
+              class="cal-slot"
+              style="width:{{calendar.pitch}}rpx"
+              data-date="{{cell.date}}"
+              bindtap="onCellTap"
+            >
+              <view
+                class="cal-cell cal-{{cell.state}}"
+                style="width:{{calendar.cell}}rpx;height:{{calendar.cell}}rpx"
+              ></view>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+      <view class="legend">
+        <view class="cal-cell cal-off legend-cell"></view>
+        <text class="legend-text">未打卡</text>
+        <view class="cal-cell cal-on legend-cell"></view>
+        <text class="legend-text">已打卡</text>
+        <text wx:if="{{admin}}" class="legend-text admin-tip">点绿色格子可删这一天</text>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">全员天数</view>
+      <view
+        wx:for="{{rows}}"
+        wx:key="nickname"
+        class="member {{item.nickname === selectedNickname ? 'member-active' : ''}}"
+        data-nickname="{{item.nickname}}"
+        bindtap="onSelectMember"
+      >
+        <view class="member-main">
+          <view class="member-name">
+            <text>{{item.nickname}}</text>
+            <text wx:if="{{item.checked_today}}" class="badge">今日已打卡</text>
+          </view>
+          <view class="member-meta">最近 {{item.last_date}}</view>
+        </view>
+        <view class="member-num">
+          <text class="num-value">{{item.total}}</text>
+          <text class="num-label">累计</text>
+        </view>
+        <view class="member-num">
+          <text class="num-value">{{item.streak}}</text>
+          <text class="num-label">连续</text>
+        </view>
+        <button
+          wx:if="{{admin}}"
+          class="remove-button"
+          data-nickname="{{item.nickname}}"
+          catchtap="onClearUser"
+        >清空</button>
+      </view>
+      <view wx:if="{{!rows.length && !loading}}" class="hint">还没有任何打卡记录。</view>
+    </view>
+
+    <view class="footnote">数据口径：checkin 记录（Asia/Shanghai），已扣除管理员删除的日期</view>
+  </block>
+</view>
