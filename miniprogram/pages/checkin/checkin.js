@@ -110,7 +110,7 @@ Page({
       // 让下次打开能一键进入。两条路径互不影响。
       getApp().globalData.session = { nickname, invite_code };
       this.persistRemembered({ nickname, invite_code });
-      this.setData({ loggedIn: true, nickname, inviteCode: invite_code, inputInviteCode: '', rememberHint: '' });
+      this.setData({ loggedIn: true, nickname, inviteCode: invite_code, rememberHint: '' });
       this.syncPending(nickname);
     } catch (error) {
       this.showError(error);
@@ -149,7 +149,6 @@ Page({
         nickname: saved.nickname,
         inviteCode: saved.inviteCode,
         inputNickname: saved.nickname,
-        inputInviteCode: '',
         rememberHint: '',
       });
       this.syncPending(saved.nickname);
